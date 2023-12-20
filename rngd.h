@@ -59,6 +59,7 @@ struct arguments {
 	bool enable_tpm;
 	int entropy_count;
 	int force_reseed;
+	bool use_slow_sources;
 
 	bool drop_privs;
 	uid_t drop_uid;
@@ -132,6 +133,15 @@ enum {
 	QRYPT_OPT_TOKEN_FILE = 0,
 	QRYPT_OPT_MAX_ERROR_DELAY = 1,
 	QRYPT_OPT_MAX,
+};
+
+/*
+ * NAMEDPIPE options
+ */
+enum {
+	NAMEDPIPE_OPT_PATH = 0,
+	NAMEDPIPE_OPT_TIMEOUT = 1,
+	NAMEDPIPE_OPT_MAX,
 };
 
 enum option_val_type {

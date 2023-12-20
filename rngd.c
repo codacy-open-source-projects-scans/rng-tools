@@ -130,6 +130,8 @@ static struct argp_option options[] = {
 
 	{ "force-reseed", 'R', "n", 0, "Time in seconds to force adding entropy to the random device" },
 
+	{ "use-slow-sources", 'u', 0, 0, "Always gather entropy from sources considered as \"slow\" too" },
+
 	{ "drop-privileges", 'D', "user:group", 0, "Drop privileges to a user and group specified" },
 
 	{ 0 },
@@ -146,6 +148,7 @@ static struct arguments default_arguments = {
 	.ignorefail	= false,
 	.entropy_count	= 8,
 	.force_reseed	= 60 * 5,
+	.use_slow_sources = false,
 	.drop_privs = false,
 };
 struct arguments *arguments = &default_arguments;
@@ -167,6 +170,7 @@ static enum {
 	ENT_PKCS11,
 	ENT_RTLSDR,
 	ENT_QRYPT,
+	ENT_NAMEDPIPE,
 	ENT_MAX
 } entropy_indexes __attribute__((used));
 
@@ -317,6 +321,22 @@ static struct rng_option qrypt_options[] = {
 	}
 };
 
+static struct rng_option namedpipe_options[] = {
+	[NAMEDPIPE_OPT_PATH] = {
+		.key = "path",
+		.type = VAL_STRING,
+		.str_val = "",
+	},
+	[NAMEDPIPE_OPT_TIMEOUT] {
+		.key = "timeout",
+		.type = VAL_INT,
+		.int_val = 5, /* 5 seconds */
+	},
+	{
+		.key = NULL,
+	}
+};
+
 static struct rng entropy_sources[ENT_MAX] = {
 	/* Note, the special char dev must be the first entry */
 	{
@@ -455,6 +475,15 @@ static struct rng entropy_sources[ENT_MAX] = {
 #endif
 		.disabled	= true,
 		.rng_options	= qrypt_options,
+	},
+	{
+		.rng_name	= "Named pipe entropy input",
+		.rng_sname	= "namedpipe",
+		.rng_fd	 = -1,
+		.flags		= { 0 },
+		.xread	  = xread_namedpipe,
+		.init	   = init_namedpipe_entropy_source,
+		.rng_options	= namedpipe_options,
 	}
 
 };
@@ -655,6 +684,10 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 			argp_usage(state);
 		else
 			arguments->force_reseed = R;
+		break;
+	}
+	case 'u': {
+		arguments->use_slow_sources = true;
 		break;
 	}
 	case 'D': {
@@ -904,17 +937,19 @@ continue_trying:
 		 * entropy from the fast sources, then iff that fails, start including the slower
 		 * sources as well. Once we get some entropy, return to only using fast sources
 		 */
-		if (no_work)
+		if (no_work) {
+			message(LOG_DAEMON|LOG_DEBUG, "Couldn't get entropy in last loop, enabling slow sources\n");
 			try_slow_sources = true;
-		else
+		} else {
 			try_slow_sources = false;
+		}
 
 		for (i = 0; i < ENT_MAX; ++i)
 		{
 			int rc;
 			/*message(LOG_CONS|LOG_INFO, "I is %d\n", i);*/
 			iter = &entropy_sources[i];
-			if (!try_slow_sources && iter->flags.slow_source)
+			if (!try_slow_sources && !arguments->use_slow_sources && iter->flags.slow_source)
 				continue;
 
 		retry_same:
@@ -948,12 +983,13 @@ continue_trying:
 			iter->failures++;
 			if (iter->failures <= MAX_RNG_FAILURES/4) {
 				/* FIPS tests have false positives */
+				message(LOG_DAEMON|LOG_DEBUG, "FIPS failure from %s, retrying\n", iter->rng_name);
 				goto retry_same;
 			}
 
 			if (iter->failures >= MAX_RNG_FAILURES && !ignorefail) {
 				message(LOG_DAEMON|LOG_ERR,
-				"too many FIPS failures, disabling entropy source\n");
+				"too many FIPS failures, disabling entropy source %s\n", iter->rng_name);
 				if (iter->close)
 					iter->close(iter);
 				iter->disabled = true;
