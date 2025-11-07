@@ -1,7 +1,10 @@
-# rng-tools - master branch
+[![Build Status](https://travis-ci.org/nhorman/rng-tools.svg?branch=master)](https://travis-ci.org/nhorman/rng-tools)
 
-This repository contains the frozen state of the repository.
-Its history is cleared. It is used only for static code
-analysis with Codacy.
+This is a random number generator daemon.
 
-Commit Time: 1734572152
+It monitors a set of entropy sources, and supplies entropy
+from them to the system kernel's /dev/random machinery.
+
+Operation is fully documented in the man page, and should be fairly intuitive
+
+
