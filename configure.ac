@@ -57,6 +57,13 @@ AC_ARG_WITH([rtlsdr],
 	[with_rtlsdr=check]
 )
 
+AC_ARG_WITH([radiacode],
+	AS_HELP_STRING([--without-radiacode],
+		[Disable radiacode support. ]),
+	[],
+	[with_radiacode=check]
+)
+
 AC_ARG_WITH([libargp],
 	AS_HELP_STRING([--without-libargp],
 		[Disable libargp support. Systems whose libc lacks argp can use libargp instead. (Default: check if libc lacks argp)]),
@@ -72,9 +79,6 @@ dnl Checks for programs
 AC_PROG_CC
 AC_PROG_RANLIB
 AM_PROG_AR
-AC_PROG_GCC_TRADITIONAL
-
-AX_PTHREAD
 
 dnl Checks for header files.
 AC_CHECK_HEADERS(sys/auxv.h)
@@ -171,11 +175,20 @@ AS_IF(
 	]
 )
 
+AS_IF(
+	[ test "x$with_radiacode" != "xno"],
+	[
+		PKG_CHECK_MODULES([libusb], [libusb-1.0], [], [AC_MSG_ERROR([libusb-1.0 is required for radiacode])])
+		AC_DEFINE([HAVE_RADIACODE],1,[Enable RADIACODE])
+	]
+)
+
 PKG_CHECK_MODULES([openssl], [openssl], [], [AC_MSG_ERROR([openssl is required])])
 PKG_CHECK_MODULES([libcap], [libcap], [], [AC_MSG_ERROR([libcap is required])])
 AM_CONDITIONAL([NISTBEACON], [test "x$with_nistbeacon" != "xno"])
 AM_CONDITIONAL([PKCS11], [test "x$with_pkcs11" != "xno"])
 AM_CONDITIONAL([RTLSDR], [test "x$with_rtlsdr" != "xno"])
+AM_CONDITIONAL([RADIACODE], [test "x$with_radiacode" != "xno"])
 
 dnl Checks for header files.
 dnl AC_HEADER_STDC

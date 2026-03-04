@@ -32,11 +32,15 @@ if RTLSDR
 rngd_SOURCES	+= rngd_rtlsdr.c
 endif
 
+if RADIACODE
+rngd_SOURCES	+= rngd_radiacode.c
+endif
+
 if QRYPT
 rngd_SOURCES	+= rngd_qrypt.c
 endif
 
-rngd_LDADD	= librngd.a $(LIBS) $(librtlsdr_LIBS) ${libp11_LIBS} ${libcrypto_LIBS} ${jansson_LIBS} ${libcurl_LIBS} ${libxml2_LIBS} ${openssl_LIBS} ${libcap_LIBS} $(PTHREAD_LIBS)
+rngd_LDADD	= librngd.a $(LIBS) $(librtlsdr_LIBS) $(libusb_LIBS) ${libp11_LIBS} ${libcrypto_LIBS} ${jansson_LIBS} ${libcurl_LIBS} ${libxml2_LIBS} ${openssl_LIBS} ${libcap_LIBS} $(PTHREAD_LIBS)
 
 if DARN
 rngd_SOURCES	+= rngd_darn.c
@@ -54,7 +58,7 @@ rngd_SOURCES	+= rngd_pkcs11.c
 pkcs11_ENGINE = -DDEFAULT_PKCS11_ENGINE=\"$(PKCS11_ENGINE)\"
 endif
 
-rngd_CFLAGS	= ${pkcs11_CFLAGS} $(librtlsdr_CFLAGS) ${pkcs11_ENGINE} ${libp11_CFLAGS} ${libcrypto_CFLAGS} ${libxml2_CFLAGS} ${openssl_CFLAGS} ${libcap_CFLAGS} $(PTHREAD_CFLAGS)
+rngd_CFLAGS	= ${pkcs11_CFLAGS} $(librtlsdr_CFLAGS) $(libusb_CFLAGS) ${pkcs11_ENGINE} ${libp11_CFLAGS} ${libcrypto_CFLAGS} ${libxml2_CFLAGS} ${openssl_CFLAGS} ${libcap_CFLAGS} $(PTHREAD_CFLAGS)
 rngd_LDFLAGS	= $(PTHREAD_CFLAGS)
 
 rngtest_SOURCES	= exits.h stats.h stats.c rngtest.c

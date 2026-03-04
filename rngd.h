@@ -144,6 +144,17 @@ enum {
 	NAMEDPIPE_OPT_MAX,
 };
 
+/*
+ * RADIACODE options
+ */
+enum {
+	RADIACODE_OPT_DEVID = 0,
+	RADIACODE_OPT_POLL_DELAY = 1,
+	RADIACODE_OPT_USE_SPECTRUM = 2,
+	RADIACODE_OPT_SERIAL = 3,
+	RADIACODE_OPT_MAX,
+};
+
 enum option_val_type {
 	VAL_INT = 0,
 	VAL_STRING = 1,

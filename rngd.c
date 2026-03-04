@@ -171,6 +171,7 @@ static enum {
 	ENT_RTLSDR,
 	ENT_QRYPT,
 	ENT_NAMEDPIPE,
+	ENT_RADIACODE,
 	ENT_MAX
 } entropy_indexes __attribute__((used));
 
@@ -337,6 +338,32 @@ static struct rng_option namedpipe_options[] = {
 	}
 };
 
+static struct rng_option radiacode_options[] = {
+	[RADIACODE_OPT_DEVID] = {
+		.key = "device_id",
+		.type = VAL_INT,
+		.int_val = 0,
+	},
+	[RADIACODE_OPT_POLL_DELAY] = {
+		.key = "poll_delay",
+		.type = VAL_INT,
+		.int_val = 100, /* 100ms default poll delay */
+	},
+	[RADIACODE_OPT_USE_SPECTRUM] = {
+		.key = "use_spectrum",
+		.type = VAL_INT,
+		.int_val = 1, /* Enable spectrum entropy by default */
+	},
+	[RADIACODE_OPT_SERIAL] = {
+		.key = "serial",
+		.type = VAL_STRING,
+		.str_val = "", /* Empty string means use device_id index */
+	},
+	{
+		.key = NULL,
+	}
+};
+
 static struct rng entropy_sources[ENT_MAX] = {
 	/* Note, the special char dev must be the first entry */
 	{
@@ -484,6 +511,22 @@ static struct rng entropy_sources[ENT_MAX] = {
 		.xread	  = xread_namedpipe,
 		.init	   = init_namedpipe_entropy_source,
 		.rng_options	= namedpipe_options,
+	},
+	{
+		.rng_name	= "Radiacode radiation detector entropy source",
+		.rng_sname	= "radiacode",
+		.rng_fd		= -1,
+		.flags		= {
+			.slow_source = 1,
+		},
+#ifdef HAVE_RADIACODE
+		.xread		= xread_radiacode,
+		.init		= init_radiacode_entropy_source,
+		.close		= close_radiacode_entropy_source,
+#else
+		.disabled	= true,
+#endif
+		.rng_options	= radiacode_options,
 	}
 
 };

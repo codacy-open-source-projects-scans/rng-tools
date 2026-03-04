@@ -65,6 +65,10 @@ extern void close_rtlsdr_entropy_source(struct rng *);
 extern int init_qrypt_entropy_source(struct rng *);
 extern void close_qrypt_entropy_source(struct rng *);
 #endif
+#ifdef HAVE_RADIACODE
+extern int init_radiacode_entropy_source(struct rng *);
+extern void close_radiacode_entropy_source(struct rng *);
+#endif
 
 extern int init_tpm_entropy_source(struct rng *);
 
@@ -96,6 +100,10 @@ extern int xread_rtlsdr(void *buf, size_t size, struct rng *ent_src);
 
 #ifdef HAVE_QRYPT
 extern int xread_qrypt(void *buf, size_t size, struct rng *ent_src);
+#endif
+
+#ifdef HAVE_RADIACODE
+extern int xread_radiacode(void *buf, size_t size, struct rng *ent_src);
 #endif
 
 extern int xread_nist(void *buf, size_t size, struct rng *ent_src);

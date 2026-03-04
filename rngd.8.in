@@ -274,6 +274,25 @@ device to use
 
 .TP
 .B
+Radiacode (radiacode) 
+Entropy gathered from Radiacode radiation detector measuring background 
+radiation. Uses quantum randomness from radioactive decay events combined
+with energy spectrum data and timing measurements for cryptographically
+secure random number generation.
+.TP
+Options
+\fBdevice_id - \fR When multiple devices are available, the integer index of the
+device to use (default: 0)
+
+\fBserial - \fR Select device by USB serial number instead of index. Overrides
+device_id when specified.
+
+\fBpoll_delay - \fR Polling delay in milliseconds between reads (default: 100)
+
+\fBuse_spectrum - \fR Enable spectrum entropy enhancement (default: 1)
+
+.TP
+.B
 Named pipe (namedpipe) 
 Reads entropy from a named pipe (aka FIFO). Another program, for example a 
 driver reading and preparing data from an external hardware RNG, is expected
